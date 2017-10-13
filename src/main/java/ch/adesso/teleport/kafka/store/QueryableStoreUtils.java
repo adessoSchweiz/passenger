@@ -1,4 +1,4 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.store;
 
 import java.util.Collection;
 

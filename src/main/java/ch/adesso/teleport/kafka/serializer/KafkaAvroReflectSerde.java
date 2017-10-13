@@ -1,4 +1,4 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.serializer;
 
 import java.util.Collections;
 import java.util.Map;

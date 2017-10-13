@@ -1,4 +1,4 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.serializer;
 
 import ch.adesso.teleport.CoreEvent;
 

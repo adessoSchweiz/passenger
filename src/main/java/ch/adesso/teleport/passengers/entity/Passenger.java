@@ -28,7 +28,7 @@ public class Passenger extends AggregateRoot {
 		}
 	}
 
-	@JsonbProperty(nillable = true, value = "credit_card")
+	@JsonbProperty(nillable = true)
 	private CreditCard creditCard;
 
 	public Passenger() {
@@ -37,11 +37,10 @@ public class Passenger extends AggregateRoot {
 
 	public Passenger(String id) {
 		super();
-		applyChange(new CoreEvent(id, 0, EventType.PASSENGER_CREATED.toString(), id));
+		applyChange(new CoreEvent(id, getNextVersion(), EventType.PASSENGER_CREATED.toString(), id));
 	}
 
 	public void updateFrom(Passenger passenger) {
-		setVersion(passenger.getVersion());
 		creditCard(passenger.getCreditCard());
 	}
 

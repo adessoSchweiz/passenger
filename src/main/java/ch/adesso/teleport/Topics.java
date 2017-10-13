@@ -1,4 +1,4 @@
-package ch.adesso.teleport.passengers.controller;
+package ch.adesso.teleport;
 
 public enum Topics {
 

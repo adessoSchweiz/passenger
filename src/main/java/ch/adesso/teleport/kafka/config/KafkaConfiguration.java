@@ -1,4 +1,4 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.config;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import ch.adesso.teleport.kafka.serializer.CoreEventAvroDeserializer;
+import ch.adesso.teleport.kafka.serializer.KafkaAvroReflectSerializer;
 
 public class KafkaConfiguration {
 
@@ -69,14 +69,7 @@ public class KafkaConfiguration {
 		}
 	}
 
-	@Data
-	@AllArgsConstructor
-	public static class KeyValue {
-		private String name;
-		private Object value;
-	}
-
-	public static Properties producerProperties(KeyValue... kv) {
+	public static Properties producerDefaultProperties() {
 		Properties properties = new Properties();
 		properties.put(Producer.BOOTSTRAP_SERVERS.toString(), System.getenv("BOOTSTRAP_SERVERS")); // kafka:9092
 		properties.put(Producer.SCHEMA_REGISTRY_URL.toString(), System.getenv("SCHEMA_REGISTRY_URL")); // http://avro-schema-registry:8081
@@ -86,44 +79,36 @@ public class KafkaConfiguration {
 		properties.put(Producer.ENABLE_IDEMPOTENCE.toString(), true);
 		properties.put(Producer.TRANSACTIONAL_ID.toString(), "transactionalId-1");
 
-		for (KeyValue keyValue : kv) {
-			properties.put(keyValue.getName(), keyValue.getValue());
-		}
 		return properties;
 	}
 
-	public static Properties consumerProperties(KeyValue... kv) {
+	public static Properties consumerDefaultProperties() {
 		Properties properties = new Properties();
 		properties.put(Consumer.BOOTSTRAP_SERVERS.toString(), System.getenv("BOOTSTRAP_SERVERS")); // kafka:9092
 		properties.put(Consumer.SCHEMA_REGISTRY_URL.toString(), System.getenv("SCHEMA_REGISTRY_URL")); // http://avro-schema-registry:8081
-		properties.put(Consumer.KEY_DESERIALIZER.toString(), StringDeserializer.class.getName());
-		properties.put(Consumer.VALUE_DESERIALIZER.toString(), CoreEventAvroDeserializer.class.getName());
-		properties.put(Consumer.ISOLATION_LEVEL.toString(), "read_commited");
+		properties.put(Consumer.KEY_DESERIALIZER.toString(), StringDeserializer.class);
+		properties.put(Consumer.VALUE_DESERIALIZER.toString(), CoreEventAvroDeserializer.class);
+		properties.put(Consumer.ISOLATION_LEVEL.toString(), "read_committed");
 		properties.put(Consumer.ENABLE_AUTO_COMMIT.toString(), "false");
 		properties.put(Consumer.GROUP_ID.toString(), "consumer-group" + UUID.randomUUID());
-
-		for (KeyValue keyValue : kv) {
-			properties.put(keyValue.getName(), keyValue.getValue());
-		}
+		properties.put(Streams.AUTO_OFFSET_RESET.toString(), "earliest");
 
 		return properties;
 	}
 
-	public static Properties streamsProperties(KeyValue... kv) {
+	public static Properties streamsDefaultProperties() {
 		Properties properties = new Properties();
-		properties.put(Streams.APPLICATION_ID.toString(), "streams-app");
+		// application.id is used to set client.id, group.id and state.dir, see Kafka
+		// Docs.
+		properties.put(Streams.APPLICATION_ID.toString(), "streams-app-" + UUID.randomUUID());
 		properties.put(Streams.BOOTSTRAP_SERVERS.toString(), System.getenv("BOOTSTRAP_SERVERS")); // kafka:9092
 		properties.put(Streams.APPLICATION_SERVER.toString(), System.getenv("APPLICATION_SERVER")); // localhost:8093
 		properties.put(Streams.STATE_DIR.toString(), "/tmp/kafka-streams");
 		properties.put(Streams.SCHEMA_REGISTRY_URL.toString(), System.getenv("SCHEMA_REGISTRY_URL")); // http://avro-schema-registry:8081
-		properties.put(Streams.GROUP_ID.toString(), "streams-group" + UUID.randomUUID());
 		properties.put(Streams.AUTO_OFFSET_RESET.toString(), "earliest");
-		properties.put(Streams.COMMIT_INTERVAL_MS.toString(), 20);
 		properties.put(Streams.PROCESSING_GUARANTEE.toString(), "exactly_once");
+		properties.put("num.stream.threads", 4);
 
-		for (KeyValue keyValue : kv) {
-			properties.put(keyValue.getName(), keyValue.getValue());
-		}
 		return properties;
 	}
 }

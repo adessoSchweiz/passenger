@@ -1,4 +1,4 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.serializer;
 
 import java.util.Map;
 
@@ -6,11 +6,11 @@ import org.apache.kafka.common.serialization.Deserializer;
 
 import ch.adesso.teleport.JsonConverter;
 
-public class JsonDeserializer<T> implements Deserializer<T> {
+public class KafkaJsonDeserializer<T> implements Deserializer<T> {
 
 	private Class<T> clazz;
 
-	public JsonDeserializer(Class<T> clazz) {
+	public KafkaJsonDeserializer(Class<T> clazz) {
 		this.clazz = clazz;
 	}
 

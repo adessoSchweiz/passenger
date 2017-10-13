@@ -1,7 +1,7 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.store;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
@@ -10,19 +10,19 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import ch.adesso.teleport.AggregateRoot;
 import ch.adesso.teleport.CoreEvent;
 
-public class StoreProcessor<T extends AggregateRoot> implements Processor<String, CoreEvent> {
+public class KafkaStoreProcessor<T extends AggregateRoot> implements Processor<String, CoreEvent> {
 
 	private String passengerStoreName;
 	private ProcessorContext context;
 	private KeyValueStore<String, T> kvPassengerStore;
-	private Consumer<CoreEvent> eventConsumer;
-	private Function<String, T> factory;
+	private Consumer<ProcessedEvent> eventConsumer;
+	private Supplier<T> aggregateFactory;
 
-	public StoreProcessor(String passengerStoreName, Function<String, T> factory,
-			Consumer<CoreEvent> eventConsumer) {
+	public KafkaStoreProcessor(String passengerStoreName, Supplier<T> aggregateFactory,
+			Consumer<ProcessedEvent> eventConsumer) {
 		this.passengerStoreName = passengerStoreName;
 		this.eventConsumer = eventConsumer;
-		this.factory = factory;
+		this.aggregateFactory = aggregateFactory;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -36,16 +36,16 @@ public class StoreProcessor<T extends AggregateRoot> implements Processor<String
 	public void process(String key, CoreEvent event) {
 		T aggregate = kvPassengerStore.get(key);
 		if (aggregate == null) {
-			aggregate = factory.apply(key);
+			aggregate = aggregateFactory.get();
 		}
 
 		aggregate.applyEvent(event);
 
 		kvPassengerStore.put(key, aggregate);
 		if (eventConsumer != null) {
-			eventConsumer.accept(event);
+			eventConsumer.accept(new ProcessedEvent(event));
 		}
-		context.commit();
+		// context.commit();
 	}
 
 	@Override

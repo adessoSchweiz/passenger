@@ -18,15 +18,23 @@ public class JsonConverter {
 
 	private static Jsonb jsonb = JsonbBuilder.create(cfg);
 
+	public static JsonbConfig getJsonbConfig() {
+		return cfg;
+	}
+
 	public static String toJson(Object object) {
-		return jsonb.toJson(object);
+		return object == null ? null : jsonb.toJson(object);
 	}
 
 	public static <T> T fromInputStream(InputStream is, Class<T> clazz) {
-		return jsonb.fromJson(is, clazz);
+		return is == null ? null : jsonb.fromJson(is, clazz);
 	}
 
 	public static <T> T fromByteArray(byte[] bytes, Class<T> clazz) {
+
+		if (bytes == null) {
+			return null;
+		}
 
 		InputStream is = null;
 		try {

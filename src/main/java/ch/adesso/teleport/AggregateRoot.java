@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import javax.json.bind.annotation.JsonbProperty;
 import javax.json.bind.annotation.JsonbTransient;
 
 import lombok.Data;
@@ -15,10 +14,8 @@ import lombok.Data;
 @Data
 public abstract class AggregateRoot {
 
-	@JsonbProperty
 	private String id;
 
-	@JsonbProperty
 	private long version = 0;
 
 	@JsonbTransient

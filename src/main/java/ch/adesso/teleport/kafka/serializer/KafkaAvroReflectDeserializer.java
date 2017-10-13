@@ -1,4 +1,4 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.serializer;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;

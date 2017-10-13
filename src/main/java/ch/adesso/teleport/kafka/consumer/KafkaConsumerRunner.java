@@ -1,16 +1,15 @@
-package ch.adesso.teleport.kafka;
+package ch.adesso.teleport.kafka.consumer;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
-
-import ch.adesso.teleport.CoreEvent;
 
 /**
  * 
@@ -18,15 +17,17 @@ import ch.adesso.teleport.CoreEvent;
  * https://kafka.apache.org/0110/javadoc/index.html?org/apache/kafka/clients/consumer/KafkaConsumer.html
  * 
  */
-public class KafkaConsumerRunner implements Runnable {
+public class KafkaConsumerRunner<T> implements Runnable {
+
+	private static final Logger LOG = Logger.getLogger(KafkaConsumerRunner.class.getName());
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
-	private final KafkaConsumer<String, CoreEvent> consumer;
+	private final KafkaConsumer<String, T> consumer;
 
 	private List<String> topics;
-	private Consumer<CoreEvent> eventConsumer;
+	private Consumer<T> eventConsumer;
 
-	public KafkaConsumerRunner(Properties consumerProperties, Consumer<CoreEvent> eventConsumer, String... topic) {
+	public KafkaConsumerRunner(Properties consumerProperties, Consumer<T> eventConsumer, String... topic) {
 		this.topics = Arrays.asList(topic);
 		this.eventConsumer = eventConsumer;
 
@@ -37,9 +38,9 @@ public class KafkaConsumerRunner implements Runnable {
 	public void run() {
 		try {
 			while (!closed.get()) {
-				ConsumerRecords<String, CoreEvent> records = consumer.poll(1000);
+				ConsumerRecords<String, T> records = consumer.poll(10000);
 				records.forEach(record -> eventConsumer.accept(record.value()));
-				consumer.commitSync();
+				consumer.commitAsync();
 			}
 		} catch (WakeupException e) {
 			// Ignore exception if closing

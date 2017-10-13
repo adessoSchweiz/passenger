@@ -1,7 +1,5 @@
 package ch.adesso.teleport.passengers.entity;
 
-import javax.json.bind.annotation.JsonbProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,17 +11,11 @@ import lombok.ToString;
 @ToString
 public class CreditCard {
 
-	@JsonbProperty("card_number")
 	private String cardNumber;
-	@JsonbProperty("card_type")
 	private CreditCardTypeEnum cardType;
-	@JsonbProperty("name_on_card")
 	private String nameOnCard;
-	@JsonbProperty("valid_to_month")
 	private Integer validToMonth;
-	@JsonbProperty("valid_to_year")
 	private Integer validToYear;
-	@JsonbProperty("secret_number")
 	private Integer secretNumber;
 
 	enum EventType {
