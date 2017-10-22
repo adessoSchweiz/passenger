@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.avro.Schema;
@@ -18,6 +19,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.serializers.AbstractKafkaAvroDeserializer;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 
 public class KafkaAvroReflectDeserializer<T> extends AbstractKafkaAvroDeserializer implements Deserializer<T> {
@@ -27,6 +29,9 @@ public class KafkaAvroReflectDeserializer<T> extends AbstractKafkaAvroDeserializ
 
 	public KafkaAvroReflectDeserializer(Class<T> type) {
 		readerSchema = ReflectData.get().getSchema(type);
+		configure(Collections.singletonMap(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
+				System.getenv("SCHEMA_REGISTRY_URL")), false);
+
 	}
 
 	@SuppressWarnings("unchecked")

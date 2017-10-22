@@ -9,18 +9,19 @@ import org.apache.kafka.streams.state.KeyValueStore;
 
 import ch.adesso.teleport.AggregateRoot;
 import ch.adesso.teleport.CoreEvent;
+import ch.adesso.teleport.EventEnvelope;
 
-public class KafkaStoreProcessor<T extends AggregateRoot> implements Processor<String, CoreEvent> {
+public class KafkaStoreProcessor<T extends AggregateRoot>
+		implements Processor<String, EventEnvelope<? extends CoreEvent>> {
 
-	private String passengerStoreName;
+	private String storeName;
 	private ProcessorContext context;
-	private KeyValueStore<String, T> kvPassengerStore;
+	private KeyValueStore<String, T> kvStore;
 	private Consumer<ProcessedEvent> eventConsumer;
 	private Supplier<T> aggregateFactory;
 
-	public KafkaStoreProcessor(String passengerStoreName, Supplier<T> aggregateFactory,
-			Consumer<ProcessedEvent> eventConsumer) {
-		this.passengerStoreName = passengerStoreName;
+	public KafkaStoreProcessor(String storeName, Supplier<T> aggregateFactory, Consumer<ProcessedEvent> eventConsumer) {
+		this.storeName = storeName;
 		this.eventConsumer = eventConsumer;
 		this.aggregateFactory = aggregateFactory;
 	}
@@ -29,23 +30,25 @@ public class KafkaStoreProcessor<T extends AggregateRoot> implements Processor<S
 	@Override
 	public void init(ProcessorContext context) {
 		this.context = context;
-		kvPassengerStore = (KeyValueStore<String, T>) context.getStateStore(passengerStoreName);
+		kvStore = (KeyValueStore<String, T>) context.getStateStore(storeName);
 	}
 
 	@Override
-	public void process(String key, CoreEvent event) {
-		T aggregate = kvPassengerStore.get(key);
+	public void process(String key, EventEnvelope<? extends CoreEvent> eventEnv) {
+
+		T aggregate = kvStore.get(key);
 		if (aggregate == null) {
 			aggregate = aggregateFactory.get();
 		}
 
-		aggregate.applyEvent(event);
+		aggregate.applyEvent(eventEnv);
 
-		kvPassengerStore.put(key, aggregate);
+		kvStore.put(key, aggregate);
 		if (eventConsumer != null) {
-			eventConsumer.accept(new ProcessedEvent(event));
+			eventConsumer.accept(new ProcessedEvent(eventEnv.getEvent()));
 		}
-		// context.commit();
+
+		context.commit();
 	}
 
 	@Override
@@ -56,7 +59,7 @@ public class KafkaStoreProcessor<T extends AggregateRoot> implements Processor<S
 
 	@Override
 	public void close() {
-		kvPassengerStore.close();
+		kvStore.close();
 	}
 
 }

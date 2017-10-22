@@ -39,23 +39,10 @@ public class PassengerResource {
 	@Inject
 	private PassengerService passengerService;
 
-	// @POST
-	// public Response createPassenger(InputStream passenger) {
-	// return Response.status(Response.Status.CREATED).entity(exec(passenger,
-	// passengerService::createPassenger))
-	// .build();
-	// }
-	//
-	// @PUT
-	// public Response updatePassenger(InputStream passenger) {
-	// return Response.ok().entity(exec(passenger,
-	// passengerService::updatePassenger)).build();
-	// }
-
 	@Path("/{passengerId}")
 	@GET
 	public Response getPassenger(@PathParam("passengerId") String passengerId) {
-		return Response.ok().entity(toJson(passengerService.find(passengerId))).build();
+		return Response.ok().entity(toJson(passengerService.findPassengerById(passengerId))).build();
 	}
 
 	@POST
@@ -65,8 +52,10 @@ public class PassengerResource {
 						.thenApply(asyncResponse::resume);
 	}
 
+	@Path("/{passengerId}")
 	@PUT
-	public void updatePassenger(InputStream passenger, @Suspended final AsyncResponse asyncResponse) {
+	public void updatePassenger(@PathParam("passengerId") String passengerId, InputStream passenger,
+			@Suspended final AsyncResponse asyncResponse) {
 		supplyAsync(() -> Response.ok().entity(exec(passenger, passengerService::updatePassenger)).build(),
 				passengerResourcePool).thenApply(asyncResponse::resume);
 	}
@@ -74,5 +63,4 @@ public class PassengerResource {
 	private String exec(InputStream is, Function<Passenger, Passenger> service) {
 		return toJson(service.apply(fromInputStream(is, Passenger.class)));
 	}
-
 }

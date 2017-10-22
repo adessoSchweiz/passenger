@@ -1,4 +1,4 @@
-package ch.adesso.teleport.passengers.controller;
+package ch.adesso.teleport.routes.controller;
 
 import java.util.Properties;
 
@@ -6,9 +6,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.enterprise.event.Event;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -29,39 +27,20 @@ import ch.adesso.teleport.kafka.serializer.KafkaJsonDeserializer;
 import ch.adesso.teleport.kafka.serializer.KafkaJsonSerializer;
 import ch.adesso.teleport.kafka.store.KafkaEventStore;
 import ch.adesso.teleport.kafka.store.KafkaStoreProcessor;
-import ch.adesso.teleport.kafka.store.ProcessedEvent;
-import ch.adesso.teleport.passengers.entity.Passenger;
-import ch.adesso.teleport.passengers.event.PassengerEventEnvelope;
-import io.reactivex.subjects.PublishSubject;
-
-/**
- * 
- * local passenger store with default event subscription for processed events.
- * 
- */
+import ch.adesso.teleport.routes.entity.Route;
+import ch.adesso.teleport.routes.event.RouteEventEnvelope;
 
 @Startup
 @Singleton
-public class PassengerLocalStoreProvider {
-
-	@Inject
-	Event<ProcessedEvent> processedEvents;
+public class RouteLocalStoreProvider {
 
 	private KafkaStreams kafkaStreams;
 	private KafkaEventStore kafkaLocalStore;
 
-	// allows dynamic subscriptions for processed events
-	private PublishSubject<ProcessedEvent> rxPublishSubject;
-
 	@PostConstruct
 	public void init() {
-		rxPublishSubject = PublishSubject.create();
-
-		// default subscriber
-		rxPublishSubject.subscribe(processedEvents::fire);
-
 		Properties props = KafkaConfiguration.streamsDefaultProperties();
-		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "streams-passengers");
+		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "streams-routes");
 
 		kafkaStreams = new KafkaStreams(createKafkaBuilder(), new StreamsConfig(props));
 		kafkaStreams.cleanUp();
@@ -72,51 +51,42 @@ public class PassengerLocalStoreProvider {
 
 	@PreDestroy
 	public void close() {
-		rxPublishSubject.onComplete();
 		this.kafkaStreams.close();
 	}
 
-	@PassengerQualifier
+	@RouteQualifier
 	@Produces
 	public KafkaEventStore getKafkaLocalStore() {
 		return kafkaLocalStore;
 	}
 
-	@PassengerQualifier
-	@Produces
-	public PublishSubject<ProcessedEvent> getRxPublishSubject() {
-		return rxPublishSubject;
-	}
-
 	private TopologyBuilder createKafkaBuilder() {
-		Serializer<PassengerEventEnvelope> eventEnvelopeSerializer = new KafkaAvroReflectSerializer<>();
-		Deserializer<PassengerEventEnvelope> eventEnvelopeDeserializer = new KafkaAvroReflectDeserializer<>(
-				PassengerEventEnvelope.class);
+		Serializer<RouteEventEnvelope> eventEnvelopeSerializer = new KafkaAvroReflectSerializer<>();
+		Deserializer<RouteEventEnvelope> eventEnvelopeDeserializer = new KafkaAvroReflectDeserializer<>(
+				RouteEventEnvelope.class);
 
-		Serde<PassengerEventEnvelope> eventEnvelopeSerde = Serdes.serdeFrom(eventEnvelopeSerializer,
+		Serde<RouteEventEnvelope> eventEnvelopeSerde = Serdes.serdeFrom(eventEnvelopeSerializer,
 				eventEnvelopeDeserializer);
 
-		Serializer<Passenger> passengerSerializer = new KafkaJsonSerializer<>();
-		Deserializer<Passenger> passengerDeserializer = new KafkaJsonDeserializer<>(Passenger.class);
-		Serde<Passenger> passengerSerde = Serdes.serdeFrom(passengerSerializer, passengerDeserializer);
+		Serializer<Route> routeSerializer = new KafkaJsonSerializer<>();
+		Deserializer<Route> routeDeserializer = new KafkaJsonDeserializer<>(Route.class);
+		Serde<Route> routeSerde = Serdes.serdeFrom(routeSerializer, routeDeserializer);
 
-		String sourceTopic = Topics.PASSENGER_EVENT_TOPIC.toString();
-		String storeName = Topics.PASSENGER_AGGREGATE_STORE.toString();
+		String sourceTopic = Topics.ROUTE_EVENT_TOPIC.toString();
+		String storeName = Topics.ROUTE_AGGREGATE_STORE.toString();
 
 		String sourceName = sourceTopic + "-source";
 		String processorName = storeName + "-processor";
 
 		// local state store
 		@SuppressWarnings("unchecked")
-		StateStoreSupplier<KeyValueStore<String, Passenger>> stateStore = Stores.create(storeName)
-				.withKeys(Serdes.String()).withValues(passengerSerde).persistent().build();
+		StateStoreSupplier<KeyValueStore<String, Route>> stateStore = Stores.create(storeName).withKeys(Serdes.String())
+				.withValues(routeSerde).persistent().build();
 
-		// aggregate passenger events -> passenger
+		// aggregate route events -> route
 		return new TopologyBuilder().addStateStore(stateStore)
 				.addSource(sourceName, Serdes.String().deserializer(), eventEnvelopeSerde.deserializer(), sourceTopic)
-				.addProcessor(processorName,
-						() -> new KafkaStoreProcessor<>(storeName, Passenger::new, rxPublishSubject::onNext),
-						sourceName)
+				.addProcessor(processorName, () -> new KafkaStoreProcessor<>(storeName, Route::new, null), sourceName)
 				.connectProcessorAndStateStores(processorName, storeName);
 
 	}

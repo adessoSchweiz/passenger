@@ -2,8 +2,6 @@ package ch.adesso.teleport.kafka.store;
 
 import static org.apache.kafka.streams.state.QueryableStoreTypes.keyValueStore;
 
-import javax.persistence.EntityNotFoundException;
-
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 
@@ -19,24 +17,18 @@ public class KafkaEventStore {
 	}
 
 	public <T extends AggregateRoot> T findById(String storeName, String id) {
-		T root = loadAggregateFromLocalStore(storeName, id);
-		if (root == null) {
-			throw new EntityNotFoundException("Could not find Entity for ID: " + id);
-		}
-
-		return (T) root;
+		return loadAggregateFromLocalStore(storeName, id);
 	}
 
-	public <T extends AggregateRoot> T findByIdAndVersion(String storeName, String aggregateId, long aggregateVersion) {
-		AggregateRoot root = loadAggregateFromLocalStore(storeName, aggregateId);
-		if (root == null || (root.getVersion() != aggregateVersion)) {
-			throw new EntityNotFoundException(
-					"Could not find Entity for ID: " + aggregateId + " and version: " + aggregateVersion);
+	public <T extends AggregateRoot> T findByIdAndVersion(String storeName, T aggregate) {
+		AggregateRoot root = loadAggregateFromLocalStore(storeName, aggregate.getId());
+		if (root == null || (root.getVersion() != aggregate.getVersion())) {
+			return findByIdAndVersionWaitForResult(storeName, aggregate);
 		}
 		return (T) root;
 	}
 
-	public <T extends AggregateRoot> T findByIdAndVersionWaitForResult(String storeName, T aggregate) {
+	private <T extends AggregateRoot> T findByIdAndVersionWaitForResult(String storeName, T aggregate) {
 		int loop = 0;
 		String id = aggregate.getId();
 		long version = aggregate.getVersion();
@@ -61,7 +53,7 @@ public class KafkaEventStore {
 			return (T) root;
 		}
 
-		throw new EntityNotFoundException("Could not find Entity for ID: " + id + " and version: " + version);
+		return null;
 	}
 
 	public <T extends AggregateRoot> T loadAggregateFromLocalStore(String storeName, String aggregateId) {

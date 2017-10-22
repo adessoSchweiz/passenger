@@ -16,8 +16,8 @@ public class PassengerTest {
 		// expect created event
 		assertThat(passenger.getUncommitedEvents().size(), is(1));
 
-		// and version = 1
-		assertThat(passenger.getVersion(), is(1l));
+		// and version = 0
+		assertThat(passenger.getVersion(), is(0l));
 	}
 
 	@Test
@@ -33,11 +33,11 @@ public class PassengerTest {
 		// and then update the data (will generate events)
 		savedPassenger.updateFrom(input);
 
-		// created credit card + 6 changes to the credit card
-		assertThat(savedPassenger.getUncommitedEvents().size(), is(7));
+		// created credit card
+		assertThat(savedPassenger.getUncommitedEvents().size(), is(1));
 
-		// we start with version = 1 taken from input and add 7 events from credit card
-		assertThat(savedPassenger.getVersion(), is(14l));
+		// we start with saved version = 7 and add 1 events from credit card
+		assertThat(savedPassenger.getVersion(), is(8l));
 
 	}
 

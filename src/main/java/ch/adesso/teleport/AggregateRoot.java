@@ -1,14 +1,13 @@
 package ch.adesso.teleport;
 
-import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 
 import javax.json.bind.annotation.JsonbTransient;
 
+import avro.shaded.com.google.common.collect.Lists;
 import lombok.Data;
 
 @Data
@@ -19,62 +18,32 @@ public abstract class AggregateRoot {
 	private long version = 0;
 
 	@JsonbTransient
-	private Collection<CoreEvent> uncommitedEvents;
+	private Collection<EventEnvelope<? extends CoreEvent>> uncommitedEvents = Lists.newArrayList();
 
-	@JsonbTransient
-	private Map<String, Consumer<CoreEvent>> eventHandlers;
-
-	public AggregateRoot() {
-		init();
-	}
-
-	public void applyEvent(final CoreEvent event) {
-		// deserialization
-		if (eventHandlers.size() == 0) {
-			initHandlers();
-		}
+	public void applyEvent(final EventEnvelope<? extends CoreEvent> eventEnv) {
+		CoreEvent event = eventEnv.getEvent();
 		setVersion(event.getSequence());
-		eventHandlers.get(event.getEventType()).accept(event);
-	}
-
-	protected void applyChange(Object eventType) {
-		CoreEvent event = new CoreEvent(getId(), getNextVersion(), eventType.toString(), null);
-		applyEvent(event);
-		synchronized (uncommitedEvents) {
-			uncommitedEvents.add(event);
-		}
-	}
-
-	protected void applyChange(Object eventType, Object newValue, Object oldValue) {
-		if (wasChanged(newValue, oldValue)) {
-			CoreEvent event = new CoreEvent(getId(), getNextVersion(), eventType.toString(), newValue);
-			applyEvent(event);
-			synchronized (uncommitedEvents) {
-				uncommitedEvents.add(event);
-			}
+		try {
+			Method m = getClass().getDeclaredMethod("on", event.getClass());
+			m.setAccessible(true);
+			m.invoke(this, event);
+		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
 	protected void applyChange(CoreEvent event) {
-		applyEvent(event);
+		EventEnvelope<? extends CoreEvent> env = wrapEventIntoEnvelope(event);
+		applyEvent(env);
 		synchronized (uncommitedEvents) {
-			uncommitedEvents.add(event);
+			uncommitedEvents.add(env);
 		}
 	}
 
-	private void init() {
-		uncommitedEvents = new ArrayList<CoreEvent>();
-		eventHandlers = new HashMap<String, Consumer<CoreEvent>>();
-		initHandlers();
-	}
+	protected abstract EventEnvelope<? extends CoreEvent> wrapEventIntoEnvelope(CoreEvent event);
 
-	protected abstract void initHandlers();
-
-	protected void addHandler(Object eventType, Consumer<CoreEvent> consumer) {
-		eventHandlers.put(eventType.toString(), consumer);
-	}
-
-	public Collection<CoreEvent> getUncommitedEvents() {
+	public Collection<EventEnvelope<? extends CoreEvent>> getUncommitedEvents() {
 		return Collections.unmodifiableCollection(uncommitedEvents);
 	}
 

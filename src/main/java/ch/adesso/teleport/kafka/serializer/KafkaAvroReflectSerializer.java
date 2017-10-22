@@ -3,6 +3,7 @@ package ch.adesso.teleport.kafka.serializer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.avro.Schema;
@@ -16,6 +17,7 @@ import org.apache.kafka.common.serialization.Serializer;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
@@ -31,6 +33,8 @@ public class KafkaAvroReflectSerializer<T> extends AbstractKafkaAvroSerializer i
 	private boolean isKey;
 
 	public KafkaAvroReflectSerializer() {
+		configure(Collections.singletonMap(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
+				System.getenv("SCHEMA_REGISTRY_URL")), false);
 	}
 
 	public KafkaAvroReflectSerializer(SchemaRegistryClient client) {

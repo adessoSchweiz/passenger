@@ -1,4 +1,4 @@
-package ch.adesso.teleport.passengers.event;
+package ch.adesso.teleport.routes.event;
 
 import org.apache.avro.reflect.Union;
 
@@ -8,14 +8,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Union({ PassengerCreatedEvent.class, CreditCardCreatedEvent.class, CreditCardChangedEvent.class })
+@Union({ RouteCreatedEvent.class, RouteCancelledEvent.class })
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @ToString(callSuper = true)
-public class PassengerEvent extends CoreEvent {
+public class RouteEvent extends CoreEvent {
 
-	public PassengerEvent(Class<?> eventType, String aggregateId, long sequence) {
+	public RouteEvent(Class<?> eventType, String aggregateId, long sequence) {
 		super(eventType.getSimpleName(), aggregateId, sequence);
 	}
 }

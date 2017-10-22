@@ -1,6 +1,14 @@
 package ch.adesso.teleport.persons.entity;
 
 import ch.adesso.teleport.AggregateRoot;
+import ch.adesso.teleport.CoreEvent;
+import ch.adesso.teleport.EventEnvelope;
+import ch.adesso.teleport.persons.event.PersonChangedEvent;
+import ch.adesso.teleport.persons.event.PersonContactChangedEvent;
+import ch.adesso.teleport.persons.event.PersonCreatedEvent;
+import ch.adesso.teleport.persons.event.PersonEvent;
+import ch.adesso.teleport.persons.event.PersonEventEnvelope;
+import ch.adesso.teleport.persons.event.PersonStatusChangedEvent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,23 +20,6 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class Person extends AggregateRoot {
 
-	enum EventType {
-		PERSON_CREATED("person_created"), FIRSTNAME_CHANGED("firstname_changed"), LASTNAME_CHANGED(
-				"lastname_changed"), BIRTHDAY_CHANGED("birthday_changed"), PERSON_STATUS_CHANGED(
-						"person_status_changed"), EMAIL_CHANGED("email_changed"), MOBIL_NO_CHANGED("mobil_no_changed");
-
-		private String type;
-
-		private EventType(String type) {
-			this.type = type;
-		}
-
-		@Override
-		public String toString() {
-			return type;
-		}
-	}
-
 	private String firstname;
 	private String lastname;
 	private String birthday;
@@ -38,56 +29,55 @@ public class Person extends AggregateRoot {
 
 	public Person(String id) {
 		super();
-		applyChange(EventType.PERSON_CREATED, id, getId());
+		applyChange(new PersonCreatedEvent(id));
 	}
 
-	public void updateFrom(Person passenger) {
-		if (passenger.getId() != null) {
-			setId(passenger.getId());
+	public void updatefrom(Person person) {
+		updatePersonData(person.getFirstname(), person.getLastname(), person.getBirthday());
+		updatePersonContactData(person.getMobil(), person.getEmail());
+		updatePersonStatus(person.getStatus());
+	}
+
+	public void updatePersonData(String firstname, String lastname, String birthday) {
+		if (wasChanged(getFirstname(), firstname) || wasChanged(getLastname(), lastname)
+				|| wasChanged(getBirthday(), birthday)) {
+			applyChange(new PersonChangedEvent(getId(), getNextVersion(), firstname, lastname, birthday));
 		}
-		setVersion(passenger.getVersion());
-		firstName(passenger.getFirstname());
-		lastName(passenger.getLastname());
-		birthday(passenger.getBirthday());
-		status(passenger.getStatus());
-		emailAddress(passenger.getEmail());
-		mobileNumber(passenger.getMobil());
 	}
 
-	public void firstName(String firstName) {
-		applyChange(EventType.FIRSTNAME_CHANGED, firstName, getFirstname());
+	public void updatePersonContactData(String mobil, String email) {
+		if (wasChanged(getMobil(), mobil) || wasChanged(getEmail(), email)) {
+			applyChange(new PersonContactChangedEvent(getId(), getNextVersion(), mobil, email));
+		}
 	}
 
-	public void lastName(String lastName) {
-		applyChange(EventType.LASTNAME_CHANGED, lastName, getLastname());
+	public void updatePersonStatus(PersonStatus status) {
+		if (wasChanged(getStatus(), status)) {
+			applyChange(new PersonStatusChangedEvent(getId(), getNextVersion(), status));
+		}
 	}
 
-	public void birthday(String birthday) {
-		applyChange(EventType.BIRTHDAY_CHANGED, birthday, getBirthday());
+	private void on(PersonCreatedEvent event) {
+		setId(event.getAggregateId());
 	}
 
-	public void status(PersonStatus status) {
-		applyChange(EventType.PERSON_STATUS_CHANGED, status != null ? status.toString() : null,
-				getStatus() != null ? getStatus().toString() : null);
+	private void on(PersonChangedEvent event) {
+		setFirstname(event.getFirstname());
+		setLastname(event.getLastname());
+		setBirthday(event.getBirthday());
 	}
 
-	public void mobileNumber(String mobilNumber) {
-		applyChange(EventType.MOBIL_NO_CHANGED, mobilNumber, getMobil());
+	private void on(PersonContactChangedEvent event) {
+		setMobil(event.getMobil());
+		setEmail(event.getEmail());
 	}
 
-	public void emailAddress(String emailAddress) {
-		applyChange(EventType.EMAIL_CHANGED, emailAddress, getEmail());
+	private void on(PersonStatusChangedEvent event) {
+		setStatus(event.getStatus() != null ? PersonStatus.valueOf(event.getStatus()) : null);
 	}
 
 	@Override
-	protected void initHandlers() {
-		addHandler(EventType.PERSON_CREATED, e -> this.setId(e.getValue()));
-		addHandler(EventType.FIRSTNAME_CHANGED, e -> this.setFirstname(e.getValue()));
-		addHandler(EventType.LASTNAME_CHANGED, e -> this.setLastname(e.getValue()));
-		addHandler(EventType.BIRTHDAY_CHANGED, e -> this.setBirthday(e.getValue()));
-		addHandler(EventType.MOBIL_NO_CHANGED, e -> this.setMobil(e.getValue()));
-		addHandler(EventType.EMAIL_CHANGED, e -> this.setEmail(e.getValue()));
-		addHandler(EventType.PERSON_STATUS_CHANGED.toString(), e -> this.setStatus(e.toEnum(PersonStatus.class)));
+	protected EventEnvelope<? extends CoreEvent> wrapEventIntoEnvelope(CoreEvent event) {
+		return new PersonEventEnvelope((PersonEvent) event);
 	}
-
 }

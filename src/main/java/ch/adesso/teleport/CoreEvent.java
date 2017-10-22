@@ -1,8 +1,6 @@
 package ch.adesso.teleport;
 
-import org.apache.avro.reflect.AvroDefault;
 import org.apache.avro.reflect.AvroName;
-import org.apache.avro.reflect.Nullable;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,25 +18,11 @@ public class CoreEvent {
 	private long sequence;
 	private long timestamp;
 
-	@Nullable
-	@AvroDefault("null")
-	private String value = null;
-
-	public CoreEvent(String aggregateId, long sequence, String eventType, Object value) {
+	public CoreEvent(String eventType, String aggregateId, long sequence) {
 		this.timestamp = System.nanoTime();
 		this.eventType = eventType;
 		this.aggregateId = aggregateId;
 		this.sequence = sequence;
-		if (value != null) {
-			this.value = value.toString();
-		}
 	}
 
-	public Integer toInt() {
-		return Integer.valueOf(value);
-	}
-
-	public <T extends Enum<T>> T toEnum(Class<T> clazz) {
-		return Enum.valueOf(clazz, value);
-	}
 }
