@@ -11,6 +11,7 @@ import kafka.common.KafkaException;
 public class KafkaEventStore {
 
 	private KafkaStreams kafkaStreams;
+	private QueryableStoreUtils queryableStoreUtils = new QueryableStoreUtils();
 
 	public KafkaEventStore(KafkaStreams kafkaStreams) {
 		this.kafkaStreams = kafkaStreams;
@@ -59,7 +60,7 @@ public class KafkaEventStore {
 	public <T extends AggregateRoot> T loadAggregateFromLocalStore(String storeName, String aggregateId) {
 		ReadOnlyKeyValueStore<String, T> store = null;
 		try {
-			store = QueryableStoreUtils.waitUntilStoreIsQueryable(storeName, keyValueStore(), kafkaStreams);
+			store = queryableStoreUtils.waitUntilStoreIsQueryable(storeName, keyValueStore(), kafkaStreams);
 
 		} catch (InterruptedException e) {
 			throw new KafkaException("KeyValueStore can not read current data.", e);

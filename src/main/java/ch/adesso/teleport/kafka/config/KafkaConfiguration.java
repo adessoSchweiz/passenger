@@ -52,15 +52,22 @@ public class KafkaConfiguration {
 		// Docs.
 		properties.put(SCHEMA_REGISTRY_URL.toString(), System.getenv("SCHEMA_REGISTRY_URL")); // http://avro-schema-registry:8081
 		properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("BOOTSTRAP_SERVERS")); // kafka:9092
-		properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-passenger-app");
+		properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-app");
 		properties.put(StreamsConfig.APPLICATION_SERVER_CONFIG, System.getenv("APPLICATION_SERVER")); // localhost:8093
 		properties.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
 		properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 		properties.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, "exactly_once");
+		properties.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, 1);
+		properties.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 20);
+
 		properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,
 				Math.max(Runtime.getRuntime().availableProcessors(), 2));
 
-		properties.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG, CustomRocksDBConfig.class);
+		// properties.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG,
+		// CustomRocksDBConfig.class);
+
+		properties.put(ProducerConfig.LINGER_MS_CONFIG, 10);
+		properties.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 500);
 
 		return properties;
 	}

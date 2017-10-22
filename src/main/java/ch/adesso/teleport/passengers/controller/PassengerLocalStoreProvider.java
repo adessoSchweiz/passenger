@@ -62,6 +62,7 @@ public class PassengerLocalStoreProvider {
 
 		Properties props = KafkaConfiguration.streamsDefaultProperties();
 		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "streams-passengers");
+		props.setProperty(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/passengers");
 
 		kafkaStreams = new KafkaStreams(createKafkaBuilder(), new StreamsConfig(props));
 		kafkaStreams.cleanUp();

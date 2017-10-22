@@ -41,6 +41,7 @@ public class RouteLocalStoreProvider {
 	public void init() {
 		Properties props = KafkaConfiguration.streamsDefaultProperties();
 		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "streams-routes");
+		props.setProperty(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/routes");
 
 		kafkaStreams = new KafkaStreams(createKafkaBuilder(), new StreamsConfig(props));
 		kafkaStreams.cleanUp();

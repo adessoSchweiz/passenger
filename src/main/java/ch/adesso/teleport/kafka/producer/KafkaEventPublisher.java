@@ -44,6 +44,7 @@ public class KafkaEventPublisher {
 		List<CompletableFuture<RecordMetadata>> futures = new ArrayList<>();
 		events.stream().forEach(e -> futures.add(publishEvent(topicName, e)));
 		waitForAll(futures);
+		producer.flush();
 	}
 
 	private CompletableFuture<RecordMetadata> publishEvent(String topicName, EventEnvelope<? extends CoreEvent> event) {

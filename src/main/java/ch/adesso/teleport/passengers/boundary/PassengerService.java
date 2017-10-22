@@ -51,7 +51,7 @@ public class PassengerService {
 
 		Person person = findPersonById(passenger.getId());
 		if (person == null) {
-			throw new EntityNotFoundException("Person not registered yet.");
+			throw new EntityNotFoundException(String.format("Person [id = %s] not registered yet.", passenger.getId()));
 		}
 
 		Passenger newPassenger = new Passenger(person.getId());

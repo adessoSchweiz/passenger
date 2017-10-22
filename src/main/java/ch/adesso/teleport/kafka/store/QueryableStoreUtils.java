@@ -9,8 +9,8 @@ import org.apache.kafka.streams.state.StreamsMetadata;
 
 public class QueryableStoreUtils {
 
-	public static <T> T waitUntilStoreIsQueryable(final String storeName,
-			final QueryableStoreType<T> queryableStoreType, final KafkaStreams streams) throws InterruptedException {
+	public <T> T waitUntilStoreIsQueryable(final String storeName, final QueryableStoreType<T> queryableStoreType,
+			final KafkaStreams streams) throws InterruptedException {
 
 		int loop = 0;
 		while (loop < 10) {
@@ -21,6 +21,8 @@ public class QueryableStoreUtils {
 				System.out.println("store not yet ready for querying ");
 				ignored.printStackTrace();
 				hosts.forEach(metaData -> System.out.println(metaData.host() + ":" + metaData.port()));
+
+				// initialization take some time specially if brokers run on the same machine
 				Thread.sleep(5000);
 				loop++;
 			}

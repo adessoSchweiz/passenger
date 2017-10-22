@@ -48,6 +48,7 @@ public class KafkaStoreProcessor<T extends AggregateRoot>
 			eventConsumer.accept(new ProcessedEvent(eventEnv.getEvent()));
 		}
 
+		context.forward(key, aggregate);
 		context.commit();
 	}
 

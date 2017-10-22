@@ -48,13 +48,14 @@ public class PersonLocalStoreProvider {
 
 		Properties props = KafkaConfiguration.streamsDefaultProperties();
 		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "streams-persons");
+		props.setProperty(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/persons");
+
 		kafkaStreams = new KafkaStreams(createKafkaBuilder(), new StreamsConfig(props));
 		kafkaStreams.cleanUp();
 		kafkaStreams.start();
 
 		kafkaLocalStore = new KafkaEventStore(kafkaStreams);
 
-		kafkaLocalStore = new KafkaEventStore(kafkaStreams);
 	}
 
 	@PreDestroy
