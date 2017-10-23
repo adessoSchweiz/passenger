@@ -6,11 +6,10 @@ import javax.persistence.EntityNotFoundException;
 
 import ch.adesso.teleport.AggregateRoot;
 import ch.adesso.teleport.Topics;
-import ch.adesso.teleport.kafka.producer.KafkaEventPublisher;
-import ch.adesso.teleport.kafka.store.KafkaEventStore;
 import ch.adesso.teleport.passengers.boundary.PassengerService;
 import ch.adesso.teleport.passengers.entity.Passenger;
-import ch.adesso.teleport.routes.controller.RouteQualifier;
+import ch.adesso.teleport.routes.controller.RouteEventPublisherProvider;
+import ch.adesso.teleport.routes.controller.RouteLocalStoreProvider;
 import ch.adesso.teleport.routes.entity.Route;
 
 @Stateless
@@ -19,13 +18,11 @@ public class RouteService {
 	@Inject
 	private PassengerService passengerService;
 
-	@RouteQualifier
 	@Inject
-	private KafkaEventPublisher routeEventPublisher;
+	private RouteEventPublisherProvider routeEventPublisherProvider;
 
-	@RouteQualifier
 	@Inject
-	private KafkaEventStore routesLocalStore;
+	private RouteLocalStoreProvider routesLocalStoreProvider;
 
 	public Route createRoute(Route route) {
 
@@ -54,7 +51,7 @@ public class RouteService {
 	}
 
 	public <T extends AggregateRoot> void save(T aggregate) {
-		routeEventPublisher.save(Topics.ROUTE_EVENT_TOPIC.toString(), aggregate);
+		routeEventPublisherProvider.getEventPublisher().save(Topics.ROUTE_EVENT_TOPIC.toString(), aggregate);
 	}
 
 	public Passenger findPassengerById(String passengerId) {
@@ -65,6 +62,6 @@ public class RouteService {
 	}
 
 	public Route findRouteById(String routeId) {
-		return routesLocalStore.findById(Topics.ROUTE_AGGREGATE_STORE.toString(), routeId);
+		return routesLocalStoreProvider.getKafkaLocalStore().findById(Topics.ROUTE_AGGREGATE_STORE.toString(), routeId);
 	}
 }

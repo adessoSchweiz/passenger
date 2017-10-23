@@ -60,7 +60,7 @@ public class KafkaStoreProcessor<T extends AggregateRoot>
 
 	@Override
 	public void close() {
-		kvStore.close();
+		// https://issues.apache.org/jira/browse/KAFKA-4919
 	}
 
 }

@@ -6,21 +6,18 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 import ch.adesso.teleport.Topics;
-import ch.adesso.teleport.kafka.producer.KafkaEventPublisher;
-import ch.adesso.teleport.kafka.store.KafkaEventStore;
-import ch.adesso.teleport.persons.controller.PersonQualifier;
+import ch.adesso.teleport.persons.controller.PersonEventPublisherProvider;
+import ch.adesso.teleport.persons.controller.PersonLocalStoreProvider;
 import ch.adesso.teleport.persons.entity.Person;
 
 @Stateless
 public class PersonService {
 
-	@PersonQualifier
 	@Inject
-	private KafkaEventPublisher personEventPublisher;
+	private PersonEventPublisherProvider personEventPublisherProvider;
 
-	@PersonQualifier
 	@Inject
-	private KafkaEventStore personsKafkaLocalStore;
+	private PersonLocalStoreProvider personsLocalStoreProvider;
 
 	public Person createPerson(Person person) {
 		String personId = UUID.randomUUID().toString();
@@ -28,7 +25,7 @@ public class PersonService {
 
 		newPerson.updatefrom(person);
 
-		personEventPublisher.save(Topics.PERSON_EVENT_TOPIC.toString(), newPerson);
+		personEventPublisherProvider.getEventPublisher().save(Topics.PERSON_EVENT_TOPIC.toString(), newPerson);
 		return newPerson;
 	}
 
@@ -41,6 +38,7 @@ public class PersonService {
 	}
 
 	public Person findPersonById(String personId) {
-		return personsKafkaLocalStore.findById(Topics.PERSON_AGGREGATE_STORE.toString(), personId);
+		return personsLocalStoreProvider.getKafkaLocalStore().findById(Topics.PERSON_AGGREGATE_STORE.toString(),
+				personId);
 	}
 }

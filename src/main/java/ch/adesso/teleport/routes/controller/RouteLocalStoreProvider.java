@@ -6,7 +6,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.enterprise.inject.Produces;
 
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -55,8 +54,6 @@ public class RouteLocalStoreProvider {
 		this.kafkaStreams.close();
 	}
 
-	@RouteQualifier
-	@Produces
 	public KafkaEventStore getKafkaLocalStore() {
 		return kafkaLocalStore;
 	}

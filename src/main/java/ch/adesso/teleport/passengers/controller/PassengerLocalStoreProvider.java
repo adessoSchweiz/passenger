@@ -7,7 +7,6 @@ import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.event.Event;
-import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import org.apache.kafka.common.serialization.Deserializer;
@@ -77,14 +76,10 @@ public class PassengerLocalStoreProvider {
 		this.kafkaStreams.close();
 	}
 
-	@PassengerQualifier
-	@Produces
 	public KafkaEventStore getKafkaLocalStore() {
 		return kafkaLocalStore;
 	}
 
-	@PassengerQualifier
-	@Produces
 	public PublishSubject<ProcessedEvent> getRxPublishSubject() {
 		return rxPublishSubject;
 	}

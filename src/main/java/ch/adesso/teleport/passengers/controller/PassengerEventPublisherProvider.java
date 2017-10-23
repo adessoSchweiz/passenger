@@ -4,7 +4,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.enterprise.inject.Produces;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 
@@ -21,8 +20,6 @@ public class PassengerEventPublisherProvider {
 
 	private KafkaEventPublisher passengerEventPublisher;
 
-	@PassengerQualifier
-	@Produces
 	public KafkaEventPublisher getEvetnPublisher() {
 		return passengerEventPublisher;
 	}
