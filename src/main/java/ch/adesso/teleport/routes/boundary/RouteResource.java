@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -37,25 +38,33 @@ public class RouteResource {
 	private RouteService routesService;
 
 	@POST
-	public Response createRoute(InputStream route) {
-		return Response.status(Response.Status.CREATED)
-				.entity(toJson(routesService.createRoute(fromInputStream(route, Route.class)))).build();
+	public void createRoute(InputStream route, @Suspended final AsyncResponse asyncResponse) {
+		supplyAsync(
+				() -> Response.status(Response.Status.CREATED)
+						.entity(toJson(routesService.createRoute(fromInputStream(route, Route.class)))).build(),
+				routesResourcePool).thenApply(asyncResponse::resume);
 	}
-
-	// @POST
-	// public void createRoute(InputStream route, @Suspended final AsyncResponse
-	// asyncResponse) {
-	// supplyAsync(
-	// () -> Response.status(Response.Status.CREATED)
-	// .entity(toJson(routesService.createRoute(fromInputStream(route,
-	// Route.class)))).build(),
-	// routesResourcePool).thenApply(asyncResponse::resume);
-	// }
 
 	@Path("/{routeId}")
 	@POST
 	public void cancelRoute(@PathParam("routeId") String routeId, @Suspended final AsyncResponse asyncResponse) {
-		supplyAsync(() -> Response.ok().build(), routesResourcePool).thenApply(asyncResponse::resume);
+		supplyAsync(() -> {
+			try {
+				routesService.cancelRoute(routeId);
+				return Response.ok().build();
+			} catch (Throwable t) {
+				while (t.getCause() != null) {
+					t = t.getCause();
+				}
+				return Response.status(Response.Status.BAD_REQUEST).entity(toJson(t.getMessage())).build();
+			}
+		}, routesResourcePool).thenApply(asyncResponse::resume);
 	}
 
+	@Path("/{routeId}")
+	@GET
+	public void getRoute(@PathParam("routeId") String routeId, @Suspended final AsyncResponse asyncResponse) {
+		supplyAsync(() -> Response.ok().entity(toJson(routesService.findRouteById(routeId))).build(),
+				routesResourcePool).thenApply(asyncResponse::resume);
+	}
 }

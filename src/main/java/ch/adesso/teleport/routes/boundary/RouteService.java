@@ -1,19 +1,24 @@
 package ch.adesso.teleport.routes.boundary;
 
+import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityNotFoundException;
 
-import ch.adesso.teleport.AggregateRoot;
 import ch.adesso.teleport.Topics;
 import ch.adesso.teleport.passengers.boundary.PassengerService;
 import ch.adesso.teleport.passengers.entity.Passenger;
+import ch.adesso.teleport.routes.controller.AcceptRouteTimer;
 import ch.adesso.teleport.routes.controller.RouteEventPublisherProvider;
 import ch.adesso.teleport.routes.controller.RouteLocalStoreProvider;
 import ch.adesso.teleport.routes.entity.Route;
+import ch.adesso.teleport.routes.entity.RouteStatus;
 
 @Stateless
 public class RouteService {
+
+	private static final Logger LOG = Logger.getLogger(RouteService.class.getName());
 
 	@Inject
 	private PassengerService passengerService;
@@ -23,6 +28,9 @@ public class RouteService {
 
 	@Inject
 	private RouteLocalStoreProvider routesLocalStoreProvider;
+
+	@Inject
+	private AcceptRouteTimer acceptRouteTimer;
 
 	public Route createRoute(Route route) {
 
@@ -37,6 +45,10 @@ public class RouteService {
 				route.getEstimatedDistance());
 
 		save(newRoute);
+
+		// trigger accept route
+		acceptRouteTimer.triggerRouteAcceptedEvent(newRoute.getId());
+
 		return newRoute;
 	}
 
@@ -44,14 +56,18 @@ public class RouteService {
 
 		Route route = findRouteById(routeId);
 		if (route == null) {
-			throw new EntityNotFoundException("Route not found.");
+			throw new EntityNotFoundException(String.format("Route [id = %s] not found.", routeId));
 		}
+		if (route.hasStatus(RouteStatus.ACCEPTED)) {
+			throw new RuntimeException("Route already accepted.");
+		}
+
 		route.cancelRoute();
 		save(route);
 	}
 
-	public <T extends AggregateRoot> void save(T aggregate) {
-		routeEventPublisherProvider.getEventPublisher().save(Topics.ROUTE_EVENT_TOPIC.toString(), aggregate);
+	public void save(Route route) {
+		routeEventPublisherProvider.getEventPublisher().save(Topics.ROUTE_EVENT_TOPIC.toString(), route);
 	}
 
 	public Passenger findPassengerById(String passengerId) {

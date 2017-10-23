@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Union({ RouteCreatedEvent.class, RouteCancelledEvent.class })
+@Union({ RouteCreatedEvent.class, RouteStatusChangedEvent.class })
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor

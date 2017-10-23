@@ -5,10 +5,10 @@ import java.util.UUID;
 import ch.adesso.teleport.AggregateRoot;
 import ch.adesso.teleport.CoreEvent;
 import ch.adesso.teleport.EventEnvelope;
-import ch.adesso.teleport.routes.event.RouteCancelledEvent;
 import ch.adesso.teleport.routes.event.RouteCreatedEvent;
 import ch.adesso.teleport.routes.event.RouteEvent;
 import ch.adesso.teleport.routes.event.RouteEventEnvelope;
+import ch.adesso.teleport.routes.event.RouteStatusChangedEvent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -49,8 +49,16 @@ public class Route extends AggregateRoot {
 		return route;
 	}
 
+	public boolean hasStatus(RouteStatus status) {
+		return this.status == status;
+	}
+
 	public void cancelRoute() {
-		applyChange(new RouteCancelledEvent(getId(), getNextVersion()));
+		applyChange(new RouteStatusChangedEvent(getId(), getNextVersion(), RouteStatus.CANCELLED));
+	}
+
+	public void acceptRoute() {
+		applyChange(new RouteStatusChangedEvent(getId(), getNextVersion(), RouteStatus.ACCEPTED));
 	}
 
 	private void on(RouteCreatedEvent event) {
@@ -67,8 +75,8 @@ public class Route extends AggregateRoot {
 		this.setStatus(event.getStatus() != null ? RouteStatus.valueOf(event.getStatus()) : null);
 	}
 
-	private void on(RouteCancelledEvent event) {
-		this.setStatus(RouteStatus.CANCELLED);
+	private void on(RouteStatusChangedEvent event) {
+		this.setStatus(RouteStatus.valueOf(event.getStatus()));
 	}
 
 	@Override
