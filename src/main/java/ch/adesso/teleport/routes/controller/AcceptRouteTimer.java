@@ -13,7 +13,7 @@ import javax.ejb.TimerService;
 import javax.inject.Inject;
 import javax.persistence.EntityNotFoundException;
 
-import ch.adesso.teleport.Topics;
+import ch.adesso.teleport.kafka.config.Topics;
 import ch.adesso.teleport.routes.entity.Route;
 import ch.adesso.teleport.routes.entity.RouteStatus;
 

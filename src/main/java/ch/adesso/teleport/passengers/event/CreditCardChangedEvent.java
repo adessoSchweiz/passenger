@@ -13,7 +13,7 @@ import lombok.ToString;
 public class CreditCardChangedEvent extends PassengerEvent {
 
 	private String cardNumber;
-	private CreditCardTypeEnum cardType;
+	private String cardType;
 	private String nameOnCard;
 	private int validToMonth;
 	private int validToYear;
@@ -23,7 +23,7 @@ public class CreditCardChangedEvent extends PassengerEvent {
 			String nameOnCard, int validToMonth, int validToYear, int secretNumber) {
 		super(CreditCardChangedEvent.class, aggregateId, sequence);
 		this.cardNumber = cardNumber;
-		this.cardType = cardType;
+		this.cardType = cardType.toString();
 		this.nameOnCard = nameOnCard;
 		this.validToMonth = validToMonth;
 		this.validToYear = validToYear;

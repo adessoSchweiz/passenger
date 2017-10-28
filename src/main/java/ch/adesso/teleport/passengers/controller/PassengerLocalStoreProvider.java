@@ -20,8 +20,8 @@ import org.apache.kafka.streams.processor.TopologyBuilder;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
 
-import ch.adesso.teleport.Topics;
 import ch.adesso.teleport.kafka.config.KafkaConfiguration;
+import ch.adesso.teleport.kafka.config.Topics;
 import ch.adesso.teleport.kafka.serializer.KafkaAvroReflectDeserializer;
 import ch.adesso.teleport.kafka.serializer.KafkaAvroReflectSerializer;
 import ch.adesso.teleport.kafka.serializer.KafkaJsonDeserializer;

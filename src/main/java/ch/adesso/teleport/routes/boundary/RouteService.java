@@ -6,7 +6,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityNotFoundException;
 
-import ch.adesso.teleport.Topics;
+import ch.adesso.teleport.kafka.config.Topics;
 import ch.adesso.teleport.passengers.boundary.PassengerService;
 import ch.adesso.teleport.passengers.entity.Passenger;
 import ch.adesso.teleport.routes.controller.AcceptRouteTimer;

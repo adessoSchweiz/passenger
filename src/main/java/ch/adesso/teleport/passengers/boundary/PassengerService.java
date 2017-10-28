@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityNotFoundException;
 
 import ch.adesso.teleport.AggregateRoot;
-import ch.adesso.teleport.Topics;
+import ch.adesso.teleport.kafka.config.Topics;
 import ch.adesso.teleport.kafka.store.ProcessedEvent;
 import ch.adesso.teleport.kafka.store.ProcessedEventFuture;
 import ch.adesso.teleport.passengers.controller.PassengerEventPublisherProvider;

@@ -60,14 +60,14 @@ public class Passenger extends AggregateRoot {
 	}
 
 	private void on(CreditCardCreatedEvent event) {
-		CreditCard creditCard = new CreditCard(event.getCardNumber(), event.getCardType(), event.getNameOnCard(),
-				event.getValidToMonth(), event.getValidToMonth(), event.getSecretNumber());
+		CreditCard creditCard = new CreditCard(event.getCardNumber(), CreditCardTypeEnum.valueOf(event.getCardType()),
+				event.getNameOnCard(), event.getValidToMonth(), event.getValidToMonth(), event.getSecretNumber());
 		setCreditCard(creditCard);
 	}
 
 	private void on(CreditCardChangedEvent event) {
-		CreditCard creditCard = new CreditCard(event.getCardNumber(), event.getCardType(), event.getNameOnCard(),
-				event.getValidToMonth(), event.getValidToMonth(), event.getSecretNumber());
+		CreditCard creditCard = new CreditCard(event.getCardNumber(), CreditCardTypeEnum.valueOf(event.getCardType()),
+				event.getNameOnCard(), event.getValidToMonth(), event.getValidToMonth(), event.getSecretNumber());
 		setCreditCard(creditCard);
 	}
 

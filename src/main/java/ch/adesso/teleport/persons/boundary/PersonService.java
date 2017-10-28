@@ -5,7 +5,7 @@ import java.util.UUID;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import ch.adesso.teleport.Topics;
+import ch.adesso.teleport.kafka.config.Topics;
 import ch.adesso.teleport.persons.controller.PersonEventPublisherProvider;
 import ch.adesso.teleport.persons.controller.PersonLocalStoreProvider;
 import ch.adesso.teleport.persons.entity.Person;
