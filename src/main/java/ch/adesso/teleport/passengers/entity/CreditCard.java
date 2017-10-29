@@ -14,7 +14,7 @@ import lombok.ToString;
 public class CreditCard {
 
 	private String cardNumber;
-	private CreditCardTypeEnum cardType;
+	private CreditCardType cardType;
 	private String nameOnCard;
 	private Integer validToMonth;
 	private Integer validToYear;

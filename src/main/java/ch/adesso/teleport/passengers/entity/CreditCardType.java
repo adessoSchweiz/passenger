@@ -1,5 +1,5 @@
 package ch.adesso.teleport.passengers.entity;
 
-public enum CreditCardTypeEnum {
+public enum CreditCardType {
     MASTER_CARD, VISA, AMEX;
 }

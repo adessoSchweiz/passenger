@@ -23,7 +23,7 @@ public class PassengerTest {
 	@Test
 	public void updateFrom() {
 		Passenger input = new Passenger("id");
-		input.setCreditCard(new CreditCard("111-222", CreditCardTypeEnum.VISA, "card_owner", 11, 2020, 333));
+		input.setCreditCard(new CreditCard("111-222", CreditCardType.VISA, "card_owner", 11, 2020, 333));
 
 		// we get passenger from DB with version 7
 		Passenger savedPassenger = new Passenger();

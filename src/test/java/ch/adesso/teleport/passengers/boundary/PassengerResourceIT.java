@@ -16,7 +16,7 @@ import org.junit.Test;
 import com.airhacks.rulz.jaxrsclient.JAXRSClientProvider;
 
 import ch.adesso.teleport.passengers.entity.CreditCard;
-import ch.adesso.teleport.passengers.entity.CreditCardTypeEnum;
+import ch.adesso.teleport.passengers.entity.CreditCardType;
 import ch.adesso.teleport.passengers.entity.Passenger;
 
 public class PassengerResourceIT {
@@ -41,7 +41,7 @@ public class PassengerResourceIT {
 	@Test
 	public void a01_shouldCreatePassenger() {
 		Passenger passengerToCreate = new Passenger();
-		CreditCard cc = new CreditCard(CARD_NUMBER, CreditCardTypeEnum.valueOf(CARD_TYPE), NAME_ON_CARD, VALID_TO_MONTH,
+		CreditCard cc = new CreditCard(CARD_NUMBER, CreditCardType.valueOf(CARD_TYPE), NAME_ON_CARD, VALID_TO_MONTH,
 				VALID_TO_YEAR, SECRET_NUMBER);
 		passengerToCreate.setCreditCard(cc);
 

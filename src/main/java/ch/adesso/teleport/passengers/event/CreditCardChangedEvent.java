@@ -1,6 +1,6 @@
 package ch.adesso.teleport.passengers.event;
 
-import ch.adesso.teleport.passengers.entity.CreditCardTypeEnum;
+import ch.adesso.teleport.passengers.entity.CreditCardType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ public class CreditCardChangedEvent extends PassengerEvent {
 	private int validToYear;
 	private int secretNumber;
 
-	public CreditCardChangedEvent(String aggregateId, long sequence, String cardNumber, CreditCardTypeEnum cardType,
+	public CreditCardChangedEvent(String aggregateId, long sequence, String cardNumber, CreditCardType cardType,
 			String nameOnCard, int validToMonth, int validToYear, int secretNumber) {
 		super(CreditCardChangedEvent.class, aggregateId, sequence);
 		this.cardNumber = cardNumber;
