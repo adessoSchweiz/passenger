@@ -1,6 +1,5 @@
 package ch.adesso.teleport.passengers.boundary;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -9,8 +8,6 @@ import javax.persistence.EntityNotFoundException;
 
 import ch.adesso.teleport.AggregateRoot;
 import ch.adesso.teleport.kafka.config.Topics;
-import ch.adesso.teleport.kafka.store.ProcessedEvent;
-import ch.adesso.teleport.kafka.store.ProcessedEventFuture;
 import ch.adesso.teleport.passengers.controller.PassengerEventPublisherProvider;
 import ch.adesso.teleport.passengers.controller.PassengerLocalStoreProvider;
 import ch.adesso.teleport.passengers.entity.Passenger;
@@ -44,6 +41,13 @@ public class PassengerService {
 			throw new EntityNotFoundException(String.format("Person [id = %s] not registered yet.", passenger.getId()));
 		}
 
+		Passenger storedPassenger = findPassengerById(passenger.getId());
+
+		if (storedPassenger != null) {
+			throw new RuntimeException(
+					String.format("Person [id = %s] has already a passenger role.", passenger.getId()));
+		}
+
 		Passenger newPassenger = new Passenger(person.getId());
 
 		newPassenger.updateFrom(passenger);
@@ -57,12 +61,6 @@ public class PassengerService {
 		storedPassenger.updateFrom(passenger);
 		save(storedPassenger);
 		return storedPassenger;
-	}
-
-	public CompletableFuture<ProcessedEvent> saveAndWaitForProcessorNotification(AggregateRoot aggregateRoot) {
-		return new ProcessedEventFuture(passengersLocalStoreProvider.getRxPublishSubject())
-				.getCompletableFuture((event) -> event.getEvent().getAggregateId().equals(aggregateRoot.getId())
-						&& event.getEvent().getSequence() == aggregateRoot.getVersion());
 	}
 
 	public void save(AggregateRoot passenger) {
