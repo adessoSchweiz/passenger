@@ -18,10 +18,9 @@ public abstract class AggregateRoot {
 	private long version = 0;
 
 	@JsonbTransient
-	private Collection<EventEnvelope<? extends CoreEvent>> uncommitedEvents = Lists.newArrayList();
+	private Collection<CoreEvent> uncommitedEvents = Lists.newArrayList();
 
-	public void applyEvent(final EventEnvelope<? extends CoreEvent> eventEnv) {
-		CoreEvent event = eventEnv.getEvent();
+	public <E extends CoreEvent> void applyEvent(final E event) {
 		setVersion(event.getSequence());
 		try {
 			Method m = getClass().getDeclaredMethod("on", event.getClass());
@@ -34,16 +33,13 @@ public abstract class AggregateRoot {
 	}
 
 	protected void applyChange(CoreEvent event) {
-		EventEnvelope<? extends CoreEvent> env = wrapEventIntoEnvelope(event);
-		applyEvent(env);
+		applyEvent(event);
 		synchronized (uncommitedEvents) {
-			uncommitedEvents.add(env);
+			uncommitedEvents.add(event);
 		}
 	}
 
-	protected abstract EventEnvelope<? extends CoreEvent> wrapEventIntoEnvelope(CoreEvent event);
-
-	public Collection<EventEnvelope<? extends CoreEvent>> getUncommitedEvents() {
+	public Collection<? extends CoreEvent> getUncommitedEvents() {
 		return Collections.unmodifiableCollection(uncommitedEvents);
 	}
 

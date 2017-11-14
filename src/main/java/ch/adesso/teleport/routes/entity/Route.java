@@ -3,11 +3,7 @@ package ch.adesso.teleport.routes.entity;
 import java.util.UUID;
 
 import ch.adesso.teleport.AggregateRoot;
-import ch.adesso.teleport.CoreEvent;
-import ch.adesso.teleport.EventEnvelope;
 import ch.adesso.teleport.routes.event.RouteCreatedEvent;
-import ch.adesso.teleport.routes.event.RouteEvent;
-import ch.adesso.teleport.routes.event.RouteEventEnvelope;
 import ch.adesso.teleport.routes.event.RouteStatusChangedEvent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -77,11 +73,6 @@ public class Route extends AggregateRoot {
 
 	private void on(RouteStatusChangedEvent event) {
 		this.setStatus(RouteStatus.valueOf(event.getStatus()));
-	}
-
-	@Override
-	protected EventEnvelope<? extends CoreEvent> wrapEventIntoEnvelope(CoreEvent event) {
-		return new RouteEventEnvelope((RouteEvent) event);
 	}
 
 }

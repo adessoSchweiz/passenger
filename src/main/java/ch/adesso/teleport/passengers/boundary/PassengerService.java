@@ -31,8 +31,6 @@ public class PassengerService {
 	/**
 	 * passenger.id is same as person id and should be provided.
 	 * 
-	 * TODO: add validation for person existence
-	 * 
 	 */
 	public Passenger createPassenger(Passenger passenger) {
 

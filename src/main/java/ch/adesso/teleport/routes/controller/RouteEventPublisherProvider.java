@@ -11,6 +11,8 @@ import ch.adesso.teleport.CoreEvent;
 import ch.adesso.teleport.EventEnvelope;
 import ch.adesso.teleport.kafka.config.KafkaConfiguration;
 import ch.adesso.teleport.kafka.producer.KafkaEventPublisher;
+import ch.adesso.teleport.routes.event.RouteEvent;
+import ch.adesso.teleport.routes.event.RouteEventEnvelope;
 
 @Startup
 @Singleton
@@ -27,7 +29,7 @@ public class RouteEventPublisherProvider {
 	@PostConstruct
 	public void init() {
 		producer = new KafkaProducer<>(KafkaConfiguration.producerDefaultProperties());
-		routeEventPublisher = new KafkaEventPublisher(producer);
+		routeEventPublisher = new KafkaEventPublisher(producer, e -> new RouteEventEnvelope((RouteEvent) e));
 	}
 
 	@PreDestroy

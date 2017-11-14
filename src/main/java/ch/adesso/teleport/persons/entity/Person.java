@@ -1,13 +1,9 @@
 package ch.adesso.teleport.persons.entity;
 
 import ch.adesso.teleport.AggregateRoot;
-import ch.adesso.teleport.CoreEvent;
-import ch.adesso.teleport.EventEnvelope;
 import ch.adesso.teleport.persons.event.PersonChangedEvent;
 import ch.adesso.teleport.persons.event.PersonContactChangedEvent;
 import ch.adesso.teleport.persons.event.PersonCreatedEvent;
-import ch.adesso.teleport.persons.event.PersonEvent;
-import ch.adesso.teleport.persons.event.PersonEventEnvelope;
 import ch.adesso.teleport.persons.event.PersonStatusChangedEvent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -76,8 +72,4 @@ public class Person extends AggregateRoot {
 		setStatus(event.getStatus() != null ? PersonStatus.valueOf(event.getStatus()) : null);
 	}
 
-	@Override
-	protected EventEnvelope<? extends CoreEvent> wrapEventIntoEnvelope(CoreEvent event) {
-		return new PersonEventEnvelope((PersonEvent) event);
-	}
 }

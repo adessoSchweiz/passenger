@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -18,39 +19,44 @@ import ch.adesso.teleport.EventEnvelope;
 public class KafkaEventPublisher {
 
 	private KafkaProducer<String, EventEnvelope<? extends CoreEvent>> producer;
+	Function<CoreEvent, EventEnvelope<? extends CoreEvent>> envelopeFactory;// = (e -> new
+																			// PersonEventEnvelope((PersonEvent) e));
 
 	private Consumer<PublishedEvent> producerEvents;
 
-	public KafkaEventPublisher(KafkaProducer<String, EventEnvelope<? extends CoreEvent>> producer) {
+	public KafkaEventPublisher(KafkaProducer<String, EventEnvelope<? extends CoreEvent>> producer,
+			Function<CoreEvent, EventEnvelope<? extends CoreEvent>> envelopeFactory) {
 		this.producer = producer;
+		this.envelopeFactory = envelopeFactory;
 	}
 
 	public KafkaEventPublisher(KafkaProducer<String, EventEnvelope<? extends CoreEvent>> producer,
+			Function<CoreEvent, EventEnvelope<? extends CoreEvent>> envelopeFactory,
 			Consumer<PublishedEvent> producerEvents) {
-		this(producer);
+		this(producer, envelopeFactory);
 		this.producerEvents = producerEvents;
 	}
 
 	public <T extends AggregateRoot> void save(String topicName, T aggregateRoot) {
-		Collection<EventEnvelope<? extends CoreEvent>> events = aggregateRoot.getUncommitedEvents();
+		Collection<? extends CoreEvent> events = aggregateRoot.getUncommitedEvents();
 		publishEvents(topicName, events);
 		if (producerEvents != null) {
-			events.forEach(e -> producerEvents.accept(new PublishedEvent(e.getEvent())));
+			events.forEach(e -> producerEvents.accept(new PublishedEvent(e)));
 		}
 		aggregateRoot.clearEvents();
 	}
 
-	private void publishEvents(String topicName, Collection<EventEnvelope<? extends CoreEvent>> events) {
+	private void publishEvents(String topicName, Collection<? extends CoreEvent> events) {
 		List<CompletableFuture<RecordMetadata>> futures = new ArrayList<>();
 		events.stream().forEach(e -> futures.add(publishEvent(topicName, e)));
 		waitForAll(futures);
 		producer.flush();
 	}
 
-	private CompletableFuture<RecordMetadata> publishEvent(String topicName, EventEnvelope<? extends CoreEvent> event) {
-		String aggregateId = event.getEvent().getAggregateId();
+	private <E extends CoreEvent> CompletableFuture<RecordMetadata> publishEvent(String topicName, E event) {
+		String aggregateId = event.getAggregateId();
 		ProducerRecord<String, EventEnvelope<? extends CoreEvent>> record = new ProducerRecord<>(topicName, aggregateId,
-				event);
+				envelopeFactory.apply(event));
 
 		CompletableFuture<RecordMetadata> f = new CompletableFuture<>();
 		producer.send(record, (metadata, exception) -> {

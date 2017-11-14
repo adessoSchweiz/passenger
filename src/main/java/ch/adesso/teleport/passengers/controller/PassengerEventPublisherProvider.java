@@ -11,6 +11,8 @@ import ch.adesso.teleport.CoreEvent;
 import ch.adesso.teleport.EventEnvelope;
 import ch.adesso.teleport.kafka.config.KafkaConfiguration;
 import ch.adesso.teleport.kafka.producer.KafkaEventPublisher;
+import ch.adesso.teleport.passengers.event.PassengerEvent;
+import ch.adesso.teleport.passengers.event.PassengerEventEnvelope;
 
 @Startup
 @Singleton
@@ -27,7 +29,8 @@ public class PassengerEventPublisherProvider {
 	@PostConstruct
 	public void init() {
 		producer = new KafkaProducer<>(KafkaConfiguration.producerDefaultProperties());
-		passengerEventPublisher = new KafkaEventPublisher(producer);
+		passengerEventPublisher = new KafkaEventPublisher(producer,
+				e -> new PassengerEventEnvelope((PassengerEvent) e));
 	}
 
 	@PreDestroy

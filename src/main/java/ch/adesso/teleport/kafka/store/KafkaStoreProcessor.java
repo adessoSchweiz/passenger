@@ -41,7 +41,7 @@ public class KafkaStoreProcessor<T extends AggregateRoot>
 			aggregate = aggregateFactory.get();
 		}
 
-		aggregate.applyEvent(eventEnv);
+		aggregate.applyEvent(eventEnv.getEvent());
 
 		kvStore.put(key, aggregate);
 		if (eventConsumer != null) {

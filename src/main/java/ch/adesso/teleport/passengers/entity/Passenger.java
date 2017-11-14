@@ -3,13 +3,9 @@ package ch.adesso.teleport.passengers.entity;
 import javax.json.bind.annotation.JsonbProperty;
 
 import ch.adesso.teleport.AggregateRoot;
-import ch.adesso.teleport.CoreEvent;
-import ch.adesso.teleport.EventEnvelope;
 import ch.adesso.teleport.passengers.event.CreditCardChangedEvent;
 import ch.adesso.teleport.passengers.event.CreditCardCreatedEvent;
 import ch.adesso.teleport.passengers.event.PassengerCreatedEvent;
-import ch.adesso.teleport.passengers.event.PassengerEvent;
-import ch.adesso.teleport.passengers.event.PassengerEventEnvelope;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -71,8 +67,4 @@ public class Passenger extends AggregateRoot {
 		setCreditCard(creditCard);
 	}
 
-	@Override
-	protected EventEnvelope<? extends CoreEvent> wrapEventIntoEnvelope(CoreEvent event) {
-		return new PassengerEventEnvelope((PassengerEvent) event);
-	}
 }
