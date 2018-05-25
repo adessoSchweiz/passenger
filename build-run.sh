@@ -18,5 +18,3 @@ docker run -d \
    -e SCHEMA_REGISTRY_URL=http://schema-registry:8081 \
    -e APPLICATION_SERVER=localhost:8091 \
    adesso/passenger:${VERSION}
-   
-docker logs passenger -f
